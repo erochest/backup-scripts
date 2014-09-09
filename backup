@@ -1,0 +1,208 @@
+#!/usr/bin/env python3
+
+
+import argparse
+import datetime
+import os
+import tarfile
+import shutil
+import sys
+
+
+BACKUPDIR = '/Volumes/Untitled'
+DIRS = [
+    # '.gnupg',
+    # '.password-store',
+    # '.ssh',
+    # '.transifexrc',
+    # '.vimpressrc',
+    # 'Calibre Library',
+    # 'Calibre-Library',
+    # 'Documents',
+    # 'Movies',
+    # 'Music',
+    # 'Pictures',
+    # 'Things',
+    # 'bin',
+    # 'podcasts',
+    # 'to-read',
+    ]
+
+RAW = [
+    'time-mach',
+    'coyote',
+    'p',
+    ]
+
+
+def log(msg):
+    print('[{}] {}'.format(datetime.datetime.now().isoformat(), msg))
+
+
+def logpath(path, names):
+    log('copytree {}'.format(path))
+    return []
+
+
+def iter_archives(output_dir, dir_list):
+    for dirname in dir_list:
+        archive = os.path.join(
+            output_dir,
+            dirname.replace(' ', '_').strip('.') + '.tar.xz',
+            )
+        yield (dirname, archive)
+
+
+def archive_dir(dirname, archive):
+    log('{} => {}'.format(dirname, archive))
+    with tarfile.open(archive, 'w:xz') as tf:
+        tf.add(dirname, recursive=True)
+
+
+def archive_files(file_list, archive):
+    log('*files* => {}'.format(archive))
+    with tarfile.open(archive, 'w:xz') as tf:
+        for filename in file_list:
+            tf.add(filename)
+
+
+def backup_dirs(opts, dir_list):
+    for (dirname, archive) in iter_archives(opts.output_dir, dir_list):
+        if os.path.exists(archive):
+            if opts.clobber:
+                log('{} exists. REMOVING.'.format(archive))
+                os.unlink(archive)
+            else:
+                log('{} exists. SKIPPING.'.format(archive))
+                continue
+
+        archive_dir(dirname, archive)
+
+
+def iter_updates(index, dirname):
+    for (root, dirs, files) in os.walk(dirname):
+        for fn in files:
+            full_fn = os.path.join(root, fn)
+            mtime = os.stat(full_fn).st_mtime
+
+            if index.get(full_fn, 0) < mtime:
+                yield full_fn
+
+
+def update_dir(dirname, archive):
+    now = datetime.datetime.now()
+
+    archived = {}
+    with tarfile.open(archive, 'r:xz') as tf:
+        archived = dict(
+            (member.name, member.mtime)
+            for member in tf.getmembers()
+            )
+
+    update_archive = '{}-{}.tar.xz'.format(
+        os.path.splitext(os.path.splitext(archive)[0])[0],
+        now.strftime('%Y%m%d-%H%M'),
+        )
+    log('UPDATING {} => {}'.format(dirname, update_archive))
+    with tarfile.open(update_archive, 'w:xz') as tf:
+        c = 0
+        for fn in iter_updates(archived, dirname):
+            log('UPDATING FILE {}'.format(fn))
+            tf.add(fn)
+            c += 1
+
+    if c:
+        log('UPDATED {} files in {}'.format(c, dirname))
+    else:
+        os.unlink(update_archive)
+
+
+def update_dirs(opts, dir_list):
+    for (dirname, archive) in iter_archives(opts.output_dir, dir_list):
+        if os.path.exists(archive):
+            update_dir(dirname, archive)
+        else:
+            archive_dir(dirname, archive)
+
+
+def backup_raw(opts, raw_list):
+    for dirname in raw_list:
+        dest = os.path.join(opts.output_dir, dirname)
+        basename = dirname
+
+        if os.path.exists(dest):
+            log('{} exists. Backing it up.'.format(dest))
+            dirname = dest
+
+        members = [os.path.join(dest, d) for d in os.listdir(dest)]
+        files = [f for f in members if os.path.isfile(f)]
+        dirs = [d for d in members if os.path.isdir(d)]
+
+        archive = os.path.join(
+            opts.output_dir,
+            '{}.tar.xz'.format(basename),
+            )
+        on_archive(opts, archive, lambda a: archive_files(files, a))
+
+        for subdir in dirs:
+            archive = os.path.join(
+                opts.output_dir,
+                '{}-{}.tar.xz'.format(basename, os.path.basename(subdir)),
+                )
+            on_archive(opts, archive, lambda a: archive_dir(subdir, a))
+
+
+def on_archive(opts, archive, f):
+    if os.path.exists(archive) and opts.clobber:
+        log('{} exists. REMOVING.'.format(archive))
+        os.unlink(archive)
+    if not os.path.exists(archive):
+        f(archive)
+
+
+def backup(opts):
+    backup_dirs(opts, DIRS)
+    backup_raw(opts, RAW)
+
+
+def update(opts):
+    update_dirs(opts, DIRS)
+    opts.clobber = True
+    backup_raw(opts, RAW)
+
+
+def parse_args(argv):
+    parser = argparse.ArgumentParser(description='backup all the things')
+
+    parser.add_argument(
+        '--output-dir', '-o', metavar='OUTPUT_DIR',
+        default=BACKUPDIR,
+        help='The output directory. (default = {})'.format(BACKUPDIR),
+        )
+    parser.add_argument(
+        '--clobber', '-X', action='store_true',
+        help='Remove existing backups. This is ignored for updating. '
+             '(default = False).',
+        )
+    parser.add_argument(
+        '--update', '-U', action='store_true',
+        help='Update the existing backups. Only create new for missing ones.',
+        )
+
+    return parser.parse_args(argv)
+
+
+def main(argv=None):
+    argv = argv if argv is not None else sys.argv[1:]
+    opts = parse_args(argv)
+
+    if opts.update:
+        update(opts)
+    else:
+        backup(opts)
+
+    log('DONE!')
+
+
+if __name__ == '__main__':
+    main()

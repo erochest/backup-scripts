@@ -1,0 +1,5 @@
+#!/bin/bash
+
+cd /Volumes/Untitled
+fdups -1 -n -s -r coyote time-mach | grep -v .git > coyote.dups
+
