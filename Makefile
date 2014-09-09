@@ -9,7 +9,7 @@ test: build
 	cabal test --test-option=--color
 
 run:
-	cabal run
+	cabal run rm-dups -- --dir /Volumes/Untitled --input coyote.dups
 
 # docs:
 # generate api documentation
@@ -43,5 +43,8 @@ build:
 	cabal build
 
 rebuild: clean configure build
+
+hlint:
+	hlint *.hs src specs
 
 .PHONY: all init test run clean distclean configure deps build rebuild
