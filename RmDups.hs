@@ -6,7 +6,6 @@
 module Main where
 
 
-import           Control.Monad
 import           Data.Attoparsec.Text
 import qualified Data.Text                 as T
 import           Filesystem.Path.CurrentOS
@@ -22,15 +21,19 @@ default (T.Text)
 main :: IO ()
 main = do
     RmDups{..} <- A.execParser opts
-    shelly $ verbosely $ do
-        dups <-  foldr (liftA2 (:) . parseOnly duplicate) (Right []) . T.lines
-             <$> readfile dupFile
-        case dups of
-            Left err    -> liftIO . putStrLn $ "ERROR: " ++ err
-            Right dups' -> forM_ dups' $ \(primary, dupFiles) -> do
-                echo $  "KEEPING " <> toTextIgnore primary
-                     <> ": deleting " <> tshow (length dupFiles)
-                mapM_ rm_f dupFiles
+    shelly $ verbosely $
+        either (liftIO . putStrLn . ("ERROR: " ++)) (chdir baseDir . mapM_ rmDup)
+            =<< foldr (liftA2 (:) . parseOnly duplicate) (Right [])
+            .   T.lines
+            <$> readfile dupFile
+
+-- Primary functions
+
+rmDup :: Duplicate -> Sh ()
+rmDup (primary, dupFiles) = do
+    echo $  "KEEPING " <> toTextIgnore primary
+         <> ": deleting " <> tshow (length dupFiles)
+    mapM_ rm_f dupFiles
 
 -- Utilities
 
