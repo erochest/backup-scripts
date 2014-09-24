@@ -27,16 +27,15 @@ splitFile :: FilePath -> Sh ()
 splitFile fn = do
     mkdir_p name
     chdir name $ split (".." </> fn)
-    files <- ls name
-    if (length files == 1)
-        then do
-            echo $ "One split. Removing " <> toTextIgnore name
-            rm_rf name
-        else do
-            echo $ toTextIgnore fn <> " split. Removing."
-            rm fn
-
+    cleanUp name
     where name = basename fn
 
 split :: FilePath -> Sh ()
 split fn = run_ "split" ["-b", "5000m", toTextIgnore fn]
+
+cleanUp :: FilePath -> Sh ()
+cleanUp fn = cleanUp' =<< ls fn
+    where cleanUp' [_] =  echo ("One split. Removing " <> toTextIgnore fn)
+                       >> rm_rf fn
+          cleanUp' _   =  echo (toTextIgnore fn <> " split. Removing.")
+                       >> rm fn
