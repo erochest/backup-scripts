@@ -9,7 +9,7 @@ test: build
 	cabal test --test-option=--color
 
 run:
-	cabal run rm-dups -- --dir /Volumes/Untitled --input coyote.dups
+	cabal run split-all
 
 # docs:
 # generate api documentation
