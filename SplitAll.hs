@@ -19,6 +19,9 @@ default (T.Text)
 toBoxDir :: FilePath
 toBoxDir = "/Volumes/Untitled/to-box"
 
+splitSize :: T.Text
+splitSize = "5000m"
+
 main :: IO ()
 main = shelly $ verbosely $ chdir toBoxDir $
     mapM_ splitFile =<< L.sort . filter (hasExt "xz") <$> ls toBoxDir
@@ -31,7 +34,7 @@ splitFile fn = do
     where name = basename fn
 
 split :: FilePath -> Sh ()
-split fn = run_ "split" ["-b", "5000m", toTextIgnore fn]
+split fn = run_ "split" ["-b", splitSize, toTextIgnore fn]
 
 cleanUp :: FilePath -> Sh ()
 cleanUp fn = cleanUp' =<< ls fn
