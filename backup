@@ -5,32 +5,32 @@ import argparse
 import datetime
 import os
 import tarfile
-import shutil
+# import shutil
 import sys
 
 
 BACKUPDIR = '/Volumes/Untitled'
 DIRS = [
-    # '.gnupg',
-    # '.password-store',
-    # '.ssh',
-    # '.transifexrc',
-    # '.vimpressrc',
-    # 'Calibre Library',
-    # 'Calibre-Library',
-    # 'Documents',
-    # 'Movies',
-    # 'Music',
-    # 'Pictures',
-    # 'Things',
-    # 'bin',
-    # 'podcasts',
-    # 'to-read',
+    '.gnupg',
+    '.password-store',
+    '.ssh',
+    '.transifexrc',
+    '.vimpressrc',
+    'Calibre Library',
+    'Calibre-Library',
+    'Documents',
+    'Movies',
+    'Music',
+    'Pictures',
+    'Things',
+    'bin',
+    'podcasts',
+    'to-read',
     ]
 
 RAW = [
-    'time-mach',
-    'coyote',
+    # 'time-mach',
+    # 'coyote',
     'p',
     ]
 
