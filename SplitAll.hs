@@ -9,6 +9,7 @@ import           Control.Applicative
 import qualified Data.List                 as L
 import           Data.Monoid
 import qualified Data.Text                 as T
+import           Filesystem
 import           Filesystem.Path.CurrentOS hiding ((</>))
 import           Prelude                   hiding (FilePath)
 import           Shelly
@@ -20,7 +21,7 @@ toBoxDir :: FilePath
 toBoxDir = "/Volumes/Untitled/to-box"
 
 splitSize :: T.Text
-splitSize = "5000m"
+splitSize = "4096m"
 
 main :: IO ()
 main = shelly $ verbosely $ chdir toBoxDir $
@@ -28,6 +29,11 @@ main = shelly $ verbosely $ chdir toBoxDir $
 
 splitFile :: FilePath -> Sh ()
 splitFile fn = do
+    exists <- liftIO $ isDirectory fn
+    when exists $ do
+        echo $ "clearing out " <> toTextIgnore fn
+        rm_rf fn
+
     mkdir_p name
     chdir name $ split (".." </> fn)
     cleanUp name
