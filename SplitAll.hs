@@ -29,11 +29,6 @@ main = shelly $ verbosely $ chdir toBoxDir $
 
 splitFile :: FilePath -> Sh ()
 splitFile fn = do
-    exists <- liftIO $ isDirectory fn
-    when exists $ do
-        echo $ "clearing out " <> toTextIgnore fn
-        rm_rf fn
-
     mkdir_p name
     chdir name $ split (".." </> fn)
     cleanUp name
