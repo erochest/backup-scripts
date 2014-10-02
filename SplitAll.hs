@@ -9,7 +9,6 @@ import           Control.Applicative
 import qualified Data.List                 as L
 import           Data.Monoid
 import qualified Data.Text                 as T
-import           Filesystem
 import           Filesystem.Path.CurrentOS hiding ((</>))
 import           Prelude                   hiding (FilePath)
 import           Shelly
@@ -30,8 +29,8 @@ main = shelly $ verbosely $ chdir toBoxDir $
 splitFile :: FilePath -> Sh ()
 splitFile fn = do
     mkdir_p name
-    chdir name $ split (".." </> fn)
-    cleanUp name
+    chdir name . split $ (".." :: FilePath) </> fn
+    cleanUp fn name
     where name = basename fn
 
 split :: FilePath -> Sh ()
