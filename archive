@@ -1,0 +1,9 @@
+#!/bin/bash
+
+SRC=/Volumes/Untitled/to-box/
+DEST=/Volumes/dav/archives
+
+rsync --verbose --size-only --no-whole-file --inplace --recursive --human-readable --progress \
+	$SRC $DEST
+
+
