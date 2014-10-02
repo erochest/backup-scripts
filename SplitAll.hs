@@ -36,10 +36,10 @@ splitFile fn = do
 split :: FilePath -> Sh ()
 split fn = run_ "split" ["-b", splitSize, toTextIgnore fn]
 
-cleanUp :: FilePath -> Sh ()
-cleanUp fn = cleanUp' =<< ls fn
+cleanUp :: FilePath -> FilePath -> Sh ()
+cleanUp fn dn = cleanUp' =<< ls dn
     where cleanUp' fns
-                | length fns == 1 =  echo ("One split. Removing " <> toTextIgnore fn)
-                                  >> rm_rf fn
+                | length fns == 1 =  echo ("One split. Removing " <> toTextIgnore dn)
+                                  >> rm_rf dn
                 | otherwise       =  echo (toTextIgnore fn <> " split. Removing.")
                                   >> rm fn
