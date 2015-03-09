@@ -16,22 +16,24 @@ DIRS = [
     '.ssh',
     '.transifexrc',
     '.vimpressrc',
-    'Calibre Library',
-    'Calibre-Library',
+    'calibre-library',
     'Documents',
     'Movies',
     'Music',
     'Pictures',
     'Things',
     'bin',
+    'p',
     'podcasts',
-    'to-read',
+    's',
+    'saved-podcasts',
+    'w',
     ]
 
 RAW = [
-    # 'time-mach',
-    # 'coyote',
-    'p',
+    'time-mach',
+    'coyote',
+    'packt',
     ]
 
 
@@ -55,7 +57,7 @@ def iter_archives(output_dir, dir_list):
 
 def archive_dir(dirname, archive):
     log('{} => {}'.format(dirname, archive))
-    with tarfile.open(archive, 'w:xz') as tf:
+    with tarfile.open(archive, 'w:xz', dereference=True) as tf:
         tf.add(dirname, recursive=True)
 
 
@@ -68,6 +70,9 @@ def archive_files(file_list, archive):
 
 def backup_dirs(opts, dir_list):
     for (dirname, archive) in iter_archives(opts.output_dir, dir_list):
+        if not os.path.exists(dirname):
+            log('{} does not exist. skipping.'.format(dirname))
+            continue
         if os.path.exists(archive):
             if opts.clobber:
                 log('{} exists. REMOVING.'.format(archive))
@@ -83,6 +88,9 @@ def iter_updates(index, dirname):
     for (root, dirs, files) in os.walk(dirname):
         for fn in files:
             full_fn = os.path.join(root, fn)
+            if not os.path.exists(full_fn):
+                continue
+
             mtime = os.stat(full_fn).st_mtime
 
             if index.get(full_fn, 0) < mtime:
@@ -127,6 +135,10 @@ def update_dirs(opts, dir_list):
 
 def backup_raw(opts, raw_list):
     for dirname in raw_list:
+        if not os.path.exists(dirname):
+            log('{} does not exist. skipping.'.format(dirname))
+            continue
+
         dest = os.path.join(opts.output_dir, dirname)
         basename = dirname
 
