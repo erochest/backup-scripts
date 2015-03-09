@@ -46,8 +46,7 @@ split fn = run_ "split" ["-b", splitSize, toTextIgnore fn]
 
 cleanUp :: FilePath -> FilePath -> Sh ()
 cleanUp fn dn = cleanUp' =<< ls dn
-    where cleanUp' fns
-                | length fns == 1 =  echo ("One split. Removing " <> toTextIgnore dn)
-                                  >> rm_rf dn
-                | otherwise       =  echo (toTextIgnore fn <> " split. Removing.")
-                                  >> rm fn
+    where cleanUp' [_] =  echo ("One split. Removing " <> toTextIgnore dn)
+                       >> rm_rf dn
+          cleanUp' _   =  echo (toTextIgnore fn <> " split. Removing.")
+                       >> rm fn
