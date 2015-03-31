@@ -6,7 +6,7 @@
 module Main where
 
 
-import           Data.Attoparsec.Text
+import           Data.Attoparsec.Text      hiding (option)
 import qualified Data.Text                 as T
 import           Filesystem.Path.CurrentOS
 import           Options.Applicative       hiding (Parser)
@@ -74,4 +74,4 @@ opts = info (helper <*> opts')
             <> header "rm-dups")
 
 fileOption :: Mod OptionFields FilePath -> A.Parser FilePath
-fileOption = A.option (pure . decodeString)
+fileOption = option (decodeString <$> str)

@@ -19,7 +19,7 @@ executable rm-dups
   main-is:             RmDups.hs
   -- other-modules:       
   -- other-extensions:    
-  build-depends:       base >=4.7 && <4.8
+  build-depends:       base >=4.7 && <4.9
                      , attoparsec
                      , text
                      , shelly
@@ -31,7 +31,7 @@ executable rm-dups
 
 executable split-all
   main-is:             SplitAll.hs
-  build-depends:       base >=4.7 && <4.8
+  build-depends:       base >=4.7 && <4.9
                      , text
                      , shelly
                      , system-filepath
@@ -41,7 +41,7 @@ executable split-all
 
 executable join-all
   main-is:             JoinAll.hs
-  build-depends:       base >=4.7 && <4.8
+  build-depends:       base >=4.7 && <4.9
                      , text
                      , shelly
                      , system-filepath
@@ -55,7 +55,7 @@ test-suite backup-scripts-specs
   ghc-options:         -threaded -rtsopts
   hs-source-dirs:      specs
   main-is:             Specs.hs
-  build-depends:         base       == 4.7.*
+  build-depends:         base       == 4.8.*
                        , QuickCheck
                        , smallcheck
                        , hspec
