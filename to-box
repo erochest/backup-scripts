@@ -6,6 +6,9 @@ INPUT=time-mach
 TO_BOX=to-box
 PREFIX=time-mach
 
+ls $INPUT
+echo
+
 for fn in $(find $INPUT -type d -and -depth 1); do
 	bn=$(basename $fn)
 	dest="$TO_BOX/${PREFIX}-${bn}.tar.xz"
